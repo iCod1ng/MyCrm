@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bb.mapper.IUserMapper">
+
+    <resultMap id="BaseResultMap" type="com.bb.entity.User">
+        <id column="user_id" property="userId"/>
+        <result column="user_name" property="userName"/>
+        <result column="credits" property="credits"/>
+        <result column="password" property="password"/>
+        <result column="last_visit" property="lastVisit"/>
+        <result column="last_ip" property="lastIp"/>
+    </resultMap>
+    
+    <!--通过id查用户-->
+    <select id="selectUser" resultMap="BaseResultMap" parameterType="long">
+        SELECT * FROM t_user WHERE user_id = #{id}
+    </select>
+    <!--插入一个用户-->
+    <insert id="insertUser" parameterType="com.bb.entity.User">
+
+        <selectKey keyProperty="userId" order="AFTER" resultType="INTEGER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO  t_user(user_name,credits,password) VALUES (#{userName},#{credits},#{password})
+    </insert>
+    <!--通过用户名查找用户-->
+    <select id="findUserByName" parameterType="String" resultMap="BaseResultMap">
+        SELECT * FROM t_user WHERE user_name = #{userName}
+    </select>
+    <!--查找符合要求的用户个数-->
+    <select id="getMatchCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM t_user WHERE user_name = #{userName} AND password = #{password}
+    </select>
+
+    <!--检测用户名是否存在-->
+    <select id="isExistUserName"  parameterType="String" resultType="java.lang.Integer">
+        SELECT  COUNT(*) FROM  t_user WHERE  user_name = #{userName}
+    </select>
+    <!--查找所有用户-->
+    <select id="selectAllUser" resultMap="BaseResultMap">
+        SELECT * FROM t_user
+    </select>
+
+    <select id="selectByPage" resultMap="BaseResultMap">
+        SELECT * FROM  t_user limit 0,10
+    </select>
+
+    <update id="updateLoginInfo" parameterType="com.bb.entity.User">
+        UPDATE t_user SET last_visit=#{lastVisit} ,last_ip=#{lastIp},credits=#{credits} WHERE user_id=#{userId}
+    </update>
+
+    <select id="searchUserByName" resultMap="BaseResultMap">
+        SELECT * FROM t_user
+        <where>
+            <if test="username!=null and username.trim()!=''">
+                user_name LIKE CONCAT("%",#{username},"%")
+            </if>
+            <if test="start!=null and start.trim()!=''">
+                AND credits &gt;=#{start}
+            </if>
+            <if test="end!=null and end.trim()!=''">
+                AND credits &lt;=#{end}
+            </if>
+            AND 1=1
+        </where>
+
+
+    </select>
+
+    <select id="searchPage" resultMap="BaseResultMap">
+        SELECT * FROM t_user
+        <where>
+            <if test="username!=null and username.trim()!=''">
+                user_name LIKE CONCAT("%",#{username},"%")
+            </if>
+            <if test="start!=null and start.trim()!=''">
+                AND credits &gt;=#{start}
+            </if>
+            <if test="end!=null and end.trim()!=''">
+                AND credits &lt;=#{end}
+            </if>
+            AND 1=1
+        </where>
+        limit #{startIndex},#{pageSize}
+    </select>
+
+   <!-- <select id="selectPage" resultMap="BaseResultMap">
+        SELECT * FROM t_user limit #{startIndex},#{pageSize}
+    </select>-->
+
+    <select id="getTotalRecord" resultType="Integer">
+        SELECT COUNT(*) FROM t_user
+        <where>
+            <if test="username!=null and username.trim()!=''">
+                user_name LIKE CONCAT("%",#{username},"%")
+            </if>
+            <if test="start!=null and start.trim()!=''">
+                AND credits &gt;=#{start}
+            </if>
+            <if test="end!=null and end.trim()!=''">
+                AND credits &lt;=#{end}
+            </if>
+            AND 1=1
+        </where>
+    </select>
+
+    <!--更新积分-->
+    <update id="updateCredit">
+        UPDATE t_user SET credits=#{credits} WHERE user_id=#{userId}
+    </update>
+
+</mapper>
